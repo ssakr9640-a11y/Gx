@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Vibes App V10.0 👑</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap');
+        :root { --primary: #00d2ff; --secondary: #3a7bd5; --glass-bg: rgba(255, 255, 255, 0.08); }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Cairo', sans-serif; margin: 0; background: radial-gradient(circle at top right, #162e3a, #0f2027); color: #fff; min-height: 100vh; padding-bottom: 90px; }
+        .glass { background: var(--glass-bg); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.12); border-radius: 28px; }
+        
+        header { position: sticky; top: 0; z-index: 100; padding: 18px 25px; display: flex; justify-content: space-between; align-items: center; border-radius: 0 0 30px 30px; background: rgba(15, 32, 39, 0.9); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        header h1 { margin: 0; font-size: 1.7rem; font-weight: 800; background: linear-gradient(45deg, #fff, var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        .container { padding: 20px; max-width: 600px; margin: auto; }
+        .media-grid { display: grid; grid-template-columns: 1fr; gap: 25px; }
+        
+        /* تصميم الكارت الجديد */
+        .card { padding: 12px; position: relative; transition: transform 0.3s; }
+        video { width: 100%; border-radius: 20px; background-color: #000; box-shadow: 0 15px 35px rgba(0,0,0,0.4); }
+        .card-info { padding: 15px 10px 5px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; }
+        .card-header h3 { margin: 0; font-size: 1.1rem; font-weight: 800; color: #fff; }
+        .card-time { font-size: 0.8rem; color: #aaa; margin-top: 5px; }
+        .card-actions { display: flex; gap: 15px; font-size: 1.3rem; color: #ddd; }
+        .action-btn { cursor: pointer; transition: 0.2s; }
+        .action-btn:active { transform: scale(0.8); }
+        .like-btn.active { color: #ff4b4b; }
+        .share-btn:active { color: var(--primary); }
+
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 80px; display: flex; justify-content: space-around; align-items: center; border-radius: 35px 35px 0 0; z-index: 1000; background: rgba(15, 32, 39, 0.95); border-top: 1px solid rgba(255,255,255,0.1); }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: rgba(255, 255, 255, 0.4); flex: 1; cursor: pointer; transition: 0.3s; }
+        .nav-item i { font-size: 1.4rem; margin-bottom: 4px; }
+        .nav-item.active { color: var(--primary); transform: translateY(-5px); }
+        
+        .fab-btn { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); width: 68px; height: 68px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: #fff; display: flex; justify-content: center; align-items: center; font-size: 1.6rem; z-index: 1001; border: 4px solid #0f2027; cursor: pointer; box-shadow: 0 10px 20px rgba(0, 210, 255, 0.3); }
+        
+        .upload-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+        .upload-modal.active { display: flex; }
+        .upload-box { width: 90%; max-width: 400px; padding: 25px; border-radius: 24px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
+        input, select { width: 100%; padding: 14px; margin: 8px 0; border-radius: 12px; border: none; background: rgba(255, 255, 255, 0.1); color: #fff; font-family: 'Cairo'; outline: none; }
+        .btn-main { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; border: none; padding: 15px; border-radius: 12px; width: 100%; font-weight: 800; margin-top: 10px; cursor: pointer; font-size: 1.1rem; }
+        .progress-container { width: 100%; background: rgba(255,255,255,0.1); border-radius: 10px; margin-top: 15px; display: none; overflow: hidden; height: 10px; }
+        .progress-bar { height: 100%; background: var(--primary); width: 0%; transition: 0.2s; }
+        #progress-text { margin-top: 8px; font-size: 0.9rem; font-weight: bold; color: var(--primary); display: none; }
+        .divider { margin: 15px 0; font-size: 0.9rem; color: #888; position: relative; }
+        
+        /* إشعار النسخ */
+        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--primary); color: #fff; padding: 10px 20px; border-radius: 20px; font-weight: bold; opacity: 0; transition: 0.3s; z-index: 9999; pointer-events: none; }
+        .toast.show { opacity: 1; top: 40px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Vibes V10.0 👑</h1>
+        <div id="status-icon"><i class="fa-solid fa-signal" style="color: var(--primary);"></i></div>
+    </header>
+
+    <div class="toast" id="toastMsg">تم نسخ الرابط! ✅</div>
+
+    <div class="container">
+        <div id="videos" class="tab-content active"><div class="media-grid" id="v-cont"></div></div>
+        <div id="statuses" class="tab-content" style="display:none;"><div class="media-grid" id="s-cont"></div></div>
+    </div>
+
+    <div class="upload-modal" id="upModal">
+        <div class="upload-box glass">
+            <h2 style="margin:0 0 10px;">ارفع ذكرى 🎬</h2>
+            <input type="text" id="vTit" placeholder="عنوان الفيديو (مطلوب)">
+            <select id="vTyp">
+                <option value="videos">فيديو (عرضي)</option>
+                <option value="statuses">حالة (طولي)</option>
+            </select>
+            
+            <input type="file" id="vFile" accept="video/*" style="margin-top: 10px;">
+            
+            <div class="divider">أو حط لينك مباشر للفيديو هنا 👇</div>
+            <input type="text" id="vLink" placeholder="https://... (اختياري)">
+            
+            <button class="btn-main" id="upBtn"><i class="fa-solid fa-rocket"></i> انشر دلوقتي</button>
+            
+            <div class="progress-container" id="progContainer">
+                <div class="progress-bar" id="progBar"></div>
+            </div>
+            <p id="progress-text">0%</p>
+
+            <p onclick="closeModal()" id="closeBtn" style="color:#ff4b4b; cursor:pointer; margin-top:15px; font-weight:bold;">إغلاق</p>
+        </div>
+    </div>
+
+    <div class="fab-btn" onclick="openModal()"><i class="fa-solid fa-plus"></i></div>
+
+    <nav class="bottom-nav">
+        <div class="nav-item active" onclick="tab('videos', this)"><i class="fa-solid fa-play"></i><p>فيديوهات</p></div>
+        <div style="width:20%"></div>
+        <div class="nav-item" onclick="tab('statuses', this)"><i class="fa-solid fa-bolt"></i><p>حالات</p></div>
+    </nav>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getDatabase, ref as dbRef, onValue, push, set } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDoyrNQabdqsX_VGMI8hGTz0DNFRKwcDkg",
+            authDomain: "saldjs-74873.firebaseapp.com",
+            databaseURL: "https://saldjs-74873-default-rtdb.firebaseio.com",
+            projectId: "saldjs-74873",
+            storageBucket: "saldjs-74873.firebasestorage.app",
+            messagingSenderId: "886959197654",
+            appId: "1:886959197654:web:44bc8a27581815accb2877"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // وظيفة حساب وقت النشر
+        const timeAgo = (timestamp) => {
+            if (!timestamp) return "";
+            const seconds = Math.floor((new Date() - timestamp) / 1000);
+            if (seconds < 60) return "الآن";
+            if (seconds < 3600) return `منذ ${Math.floor(seconds/60)} دقيقة`;
+            if (seconds < 86400) return `منذ ${Math.floor(seconds/3600)} ساعة`;
+            return `منذ ${Math.floor(seconds/86400)} يوم`;
+        };
+
+        window.tab = (id, el) => {
+            document.querySelectorAll('.tab-content').forEach(x => x.style.display = 'none');
+            document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
+            document.getElementById(id).style.display = 'block';
+            el.classList.add('active');
+        };
+
+        window.openModal = () => document.getElementById('upModal').classList.add('active');
+        window.closeModal = () => {
+            document.getElementById('upModal').classList.remove('active');
+            document.getElementById('progContainer').style.display = 'none';
+            document.getElementById('progress-text').style.display = 'none';
+        };
+
+        // دالة نسخ اللينك
+        window.copyLink = (url) => {
+            navigator.clipboard.writeText(url).then(() => {
+                const toast = document.getElementById('toastMsg');
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 2000);
+            });
+        };
+
+        // رسم الكارت الجديد
+        const draw = (item, isS) => `
+            <div class="card glass">
+                <video controls preload="metadata" ${isS ? 'style="aspect-ratio:9/16;object-fit:cover"' : ''}>
+                    <source src="${item.url}" type="video/mp4">
+                </video>
+                <div class="card-info">
+                    <div class="card-header">
+                        <h3>${item.title}</h3>
+                        <div class="card-actions">
+                            <i class="fa-solid fa-share action-btn share-btn" onclick="copyLink('${item.url}')"></i>
+                            <i class="fa-solid fa-heart action-btn like-btn" onclick="this.classList.toggle('active')"></i>
+                        </div>
+                    </div>
+                    <div class="card-time">${timeAgo(item.time)}</div>
+                </div>
+            </div>`;
+
+        onValue(dbRef(db, 'media/videos'), s => {
+            const c = document.getElementById('v-cont'); c.innerHTML = '';
+            if(s.exists()) Object.values(s.val()).reverse().forEach(v => c.innerHTML += draw(v, false));
+        });
+
+        onValue(dbRef(db, 'media/statuses'), s => {
+            const c = document.getElementById('s-cont'); c.innerHTML = '';
+            if(s.exists()) Object.values(s.val()).reverse().forEach(v => c.innerHTML += draw(v, true));
+        });
+
+        document.getElementById("upBtn").onclick = () => {
+            const tit = document.getElementById('vTit').value;
+            const typ = document.getElementById('vTyp').value;
+            const fileInput = document.getElementById('vFile');
+            const linkInput = document.getElementById('vLink').value;
+            
+            if(!tit) return alert("اكتب عنوان يا هندسة!");
+            if(fileInput.files.length === 0 && !linkInput) return alert("يا تختار فيديو، يا تحط لينك!");
+
+            // النشر بلينك مباشر
+            if(linkInput) {
+                const n = push(dbRef(db, `media/${typ}`));
+                set(n, { title: tit, url: linkInput, time: Date.now() }).then(() => {
+                    alert("تم النشر بنجاح! 🔥");
+                    closeModal();
+                    document.getElementById('vTit').value = "";
+                    document.getElementById('vLink').value = "";
+                });
+                return;
+            }
+
+            // الرفع على Cloudinary بالاسم الصحيح
+            const file = fileInput.files[0];
+            const progContainer = document.getElementById('progContainer');
+            const progBar = document.getElementById('progBar');
+            const progText = document.getElementById('progress-text');
+            const upBtn = document.getElementById('upBtn');
+            const closeBtn = document.getElementById('closeBtn');
+
+            progContainer.style.display = 'block';
+            progText.style.display = 'block';
+            upBtn.style.display = 'none';
+            closeBtn.style.display = 'none';
+
+            // هنا صلحنا الغلطة dkbm3la7c (بحرف L)
+            const url = "https://api.cloudinary.com/v1_1/dkbm3la7c/video/upload";
+            const fd = new FormData();
+            fd.append('file', file);
+            fd.append('upload_preset', 'sioenymh'); 
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', url, true);
+
+            xhr.upload.onprogress = (e) => {
+                if (e.lengthComputable) {
+                    const percent = Math.round((e.loaded / e.total) * 100);
+                    progBar.style.width = percent + '%';
+                    progText.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري الرفع... ${percent}%`;
+                }
+            };
+
+            xhr.onload = () => {
+                if (xhr.status === 200) {
+                    const response = JSON.parse(xhr.responseText);
+                    const n = push(dbRef(db, `media/${typ}`));
+                    set(n, { title: tit, url: response.secure_url, time: Date.now() }).then(() => {
+                        alert("الفيديو اترفع بنجاح يا كامادو! 👑");
+                        closeModal();
+                        document.getElementById('vTit').value = "";
+                        fileInput.value = "";
+                        upBtn.style.display = 'block';
+                        closeBtn.style.display = 'block';
+                    });
+                } else {
+                    const err = JSON.parse(xhr.responseText);
+                    alert("مشكلة في الرفع: " + (err.error.message || "حاول تاني"));
+                    upBtn.style.display = 'block';
+                    closeBtn.style.display = 'block';
+                    progText.style.display = 'none';
+                }
+            };
+
+            xhr.onerror = () => {
+                alert("النت فصل أو ضعيف جداً، حاول تاني!");
+                upBtn.style.display = 'block';
+                closeBtn.style.display = 'block';
+                progText.style.display = 'none';
+            };
+
+            xhr.send(fd);
+        };
+    </script>
+</body>
+</html>
